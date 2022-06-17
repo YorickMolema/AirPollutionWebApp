@@ -1,0 +1,38 @@
+* {
+  box-sizing: border-box;
+}
+
+div.container {
+  height: 100vh;
+  width: 100vw;
+
+}
+
+div.container mat-grid-list {
+  height: calc(100% - 5px);
+}
+
+mat-form-field + mat-form-field {
+  margin-left: 5px;
+}
+
+google-chart + google-chart {
+  margin-top: 5px;
+}
+
+.graphContainer google-chart {
+  border: 1px solid darkgray;
+  border-radius: 4px;
+  box-shadow: 4px 4px 4px darkgray;
+}
+
+.graphContainer {
+  display: flex;
+  overflow-y: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  height: calc(100%);
+  width: calc(100%);
+}
