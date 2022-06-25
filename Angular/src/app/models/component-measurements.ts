@@ -1,18 +1,14 @@
 import {Row} from "angular-google-charts";
 
 export class ComponentMeasurements {
-  constructor(name: string) {
+  constructor(name: string, isGenerated:boolean) {
     this.name = name;
-    this.measurements = new Array<Row>();
-    this.measurementsProcessed = new Array<Row>();
     this.filteredMeasurements = new Array<Row>();
-    this.filteredMeasurementsProcessed = new Array<Row>();
-    this.allFilteredMeasurements = new Array<Row>();
+    this.allMeasurements = new Array<Row>();
+    this.isGenerated = isGenerated;
   }
   name: string;
-  measurements: Array<Row>;
-  measurementsProcessed: Array<Row>;
   filteredMeasurements: Array<Row>;
-  filteredMeasurementsProcessed: Array<Row>;
-  allFilteredMeasurements: Array<Row>;
+  allMeasurements: Array<Row>;
+  isGenerated: boolean;
 }

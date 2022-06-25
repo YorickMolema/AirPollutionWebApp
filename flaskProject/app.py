@@ -107,7 +107,7 @@ def sensors():
     query = "SELECT * FROM Sensor WHERE stationID = %s"
     cur.execute(query, record)
     new_data = []
-    columns = ["SensorID", "StationID", "Component", "Unit", "Duration", "TypeOfMeasurement", "MeasuringSystem"]
+    columns = ["SensorID", "StationID", "Component", "Unit", "Duration", "TypeOfMeasurement", "MeasuringSystem", "isGenerated"]
     data = cur.fetchall()
     for item in data:
         new_data.append(dict(zip(columns, item)))

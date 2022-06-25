@@ -20,15 +20,15 @@ AQILevels = {
 def uploadData(generatedData, stationID, component):
     mycursor.execute("SELECT distinct startTime,endTime from measurement")
     times = mycursor.fetchall()
-    record = [stationID, component, "µg/m³", "hour"]
+    record = [stationID, component, "µg/m³", "hour", 1]
     mycursor.execute("""
-                INSERT INTO sensorgenerated (StationID, Component, Unit, Duration)
-                VALUES (%s, %s, %s, %s)""", record)
+                INSERT INTO sensor(StationID, Component, Unit, Duration, isGenerated)
+                VALUES (%s, %s, %s, %s, %s)""", record)
     sensorID = mycursor.lastrowid
     for i in range(0, len(generatedData)):
         record = [sensorID, times[i][0], times [i][1], generatedData[i]]
         mycursor.execute("""
-        INSERT INTO measurementgenerated (SensorID, startTime, endTime, Value)
+        INSERT INTO measurement(SensorID, startTime, endTime, Value)
         VALUES (%s, %s, %s, %s)""", record)
     mydb.commit()
 

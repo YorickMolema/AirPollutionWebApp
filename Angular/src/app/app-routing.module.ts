@@ -4,7 +4,7 @@ import {RouterModule, Routes} from "@angular/router";
 import {CityComponent} from "./city/city.component";
 
 const routes: Routes = [
-  {path: 'city', component: CityComponent}
+  {path: '', component: CityComponent}
 ];
 
 @NgModule({

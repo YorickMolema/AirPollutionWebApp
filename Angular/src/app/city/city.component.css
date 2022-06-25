@@ -12,7 +12,8 @@ div.container mat-grid-list {
   height: calc(100% - 5px);
 }
 
-mat-form-field + mat-form-field {
+mat-form-field + mat-form-field ,
+mat-form-field + mat-select {
   margin-left: 5px;
 }
 
@@ -27,12 +28,41 @@ google-chart + google-chart {
 }
 
 .graphContainer {
-  display: flex;
+  height: calc(100%);
+  width: calc(100%);
   overflow-y: auto;
+}
+
+.scroller {
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-content: center;
   justify-content: center;
-  height: calc(100%);
-  width: calc(100%);
+
+}
+
+section + section,
+mat-form-field + section{
+  margin-left: 10px;
+}
+
+mat-radio-button + mat-radio-button{
+  margin-top: 4px;
+}
+
+section.boxed {
+  padding: 4px;
+  border:1px solid black;
+  background-color: white;
+  border-radius: 4px 4px 4px 4px;
+  box-shadow: 4px 4px lightgray;
+  font-size: 11pt;
+}
+
+.vertical.flex {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+
 }

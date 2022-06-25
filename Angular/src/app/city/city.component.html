@@ -44,70 +44,87 @@
         </mat-form-field>
 
       </ng-container>
-      <ng-container *ngIf="validDateSelected">
-        <section class="example-section">
-  <span class="example-list-section">
-    <ul>
-      <mat-radio-group [(ngModel)]="selectedAverage">
-        <li *ngFor="let average of this.averages">
-          <mat-radio-button class="example-radio-button" [value]="average" (change)="updateOnAverage()">
-          {{average}}
-          </mat-radio-button>
-        </li>
-      </mat-radio-group>
-      <li>
-        <mat-checkbox [(ngModel)]="simulationIsRunning"
-                      (change)="checkSimulationStart($event)"
-                      checked="false">
-          Play simulation {{simulationIsRunning}}
-        </mat-checkbox>
-      </li>
-    </ul>
-  </span>
+      <section class="boxed" *ngIf="validDateSelected">
+        <div class="vertical flex">
+          <mat-radio-group [(ngModel)]="selectedAverage">
+            <div *ngFor="let average of this.averages">
+              <mat-radio-button class="example-radio-button" [value]="average" (change)="updateOnAverage()">
+                {{average}}
+              </mat-radio-button>
+            </div>
+          </mat-radio-group>
+        </div>
+
+      </section>
+
+
+      <ng-container *ngIf="validDateSelected && selectedAverage" >
+        <section class="boxed">
+          <div class="vertical flex">
+            <div *ngFor="let sensor of this.allAvailableSensors">
+              <mat-checkbox [(ngModel)]="sensor.Selected"
+                            (change)="updateAllSensorsSelected(sensor);">
+                {{sensor.Component}} <span *ngIf="sensor.isGenerated">(generated)</span>
+                <span
+                  *ngIf="!sensor.isGenerated && sensor.hasDataFromDB">Cleaned: {{(sensor.numberOfCleanedMeasurements / sensor.totalNumberOfMeasurements) * 100 | number:'1.0-0'}}
+                  %</span>
+              </mat-checkbox>
+            </div>
+          </div>
         </section>
       </ng-container>
 
+      <section class="boxed" *ngIf="selectedSensors.length > 0">
+        <div class="vertical flex">
+          <button mat-icon-button *ngIf="!simulationIsRunning" (click)="startSimulation()"
+                  [disabled]="simulationIsRunning">
+            <mat-icon>play_circle</mat-icon>
+          </button>
+          <button mat-icon-button *ngIf="simulationIsRunning" (click)="stopSimulation()">
+            <mat-icon>stop_circle</mat-icon>
+          </button>
+          <P *ngIf="simulationIsRunning"> {{currentSimulationTime | date:'MM/dd HH:mm'}}</P>
+        </div>
+      </section>
 
-      <ng-container *ngIf="simulationIsRunning">
-        {{simulationTime}}
-      </ng-container>
-
-
-      <ng-container *ngIf="validDateSelected">
-        <section class="example-section">
-  <span class="example-list-section">
-    <ul>
-      <li *ngFor="let sensor of this.allAvailableSensors">
-        <mat-checkbox [(ngModel)]="sensor.Selected"
-                      (change)="updateAllSensorsSelected(sensor);">
-          {{sensor.Name}}
-        </mat-checkbox>
-      </li>
-    </ul>
-  </span>
-        </section>
-      </ng-container>
     </mat-grid-tile>
+
+
     <mat-grid-tile
       [colspan]="25"
       [rowspan]="20"
       [style.background]="color">
       <div class="graphContainer">
-        <ng-container *ngIf="this.selectedSensors.length > 0">
-          <ng-container *ngIf="selectedCity">
-            <ng-container *ngIf="selectedStation">
-              <google-chart #chart *ngFor="let entry of this.selectedSensors"
-                            [title]="'Level of ' + entry.name + ' over time in ' + this.selectedCity.Name + ' ' + this.selectedStation.Street"
-                            [type]="typeLine"
-                            [data]="entry.allFilteredMeasurements"
-                            [columns]="['Data', entry.name, entry.name + 'Cleaned']"
-                            [options]="optionsLine"
-                            [width]="width"
-                            [height]="height">
-              </google-chart>
+        <div class="scroller">
+          <ng-container *ngIf="this.selectedSensors.length > 0 && selectedCity && selectedStation">
+            <ng-container *ngFor="let sensor of this.selectedSensors">
+              <ng-container *ngIf="sensor.isGenerated; then generated; else normal">
+              </ng-container>
+              <ng-template #normal>
+                <google-chart #chart *ngIf="sensor.hasDataFromDB"
+                              [title]="'Level of ' + sensor.Component + ' in ' +  selectedCity.Name + ' ' + selectedStation.Street"
+                              [type]="typeLine"
+                              [data]="sensor.filteredMeasurements"
+                              [columns]="['Data', sensor.Component, sensor.Component + 'Cleaned']"
+                              [options]="optionsLine"
+                              [width]="width"
+                              [height]="height">
+                </google-chart>
+              </ng-template>
+              <ng-template #generated>
+                <google-chart #chart *ngIf="sensor.hasDataFromDB"
+                              [title]="'Generated level of ' + sensor.Component + ' in ' + selectedCity.Name + ' ' + selectedStation.Street "
+                              [type]="typeLine"
+                              [data]="sensor.filteredMeasurements"
+                              [columns]="['Data', sensor.Component]"
+                              [options]="optionsLine"
+                              [width]="width"
+                              [height]="height">
+                </google-chart>
+              </ng-template>
             </ng-container>
           </ng-container>
-        </ng-container>
+        </div>
       </div>
     </mat-grid-tile>
     <mat-grid-tile

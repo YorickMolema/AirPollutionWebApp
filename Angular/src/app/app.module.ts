@@ -16,6 +16,8 @@ import {MatNativeDateModule} from "@angular/material/core";
 import {MatGridListModule} from "@angular/material/grid-list";
 import {MatCardModule} from "@angular/material/card";
 import {MatRadioModule} from "@angular/material/radio";
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
 
 
 @NgModule({
@@ -38,7 +40,9 @@ import {MatRadioModule} from "@angular/material/radio";
     MatNativeDateModule,
     MatGridListModule,
     MatCardModule,
-    MatRadioModule
+    MatRadioModule,
+    MatButtonModule,
+    MatIconModule
   ],
   providers: [],
   bootstrap: [AppComponent]
