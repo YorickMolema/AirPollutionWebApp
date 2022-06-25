@@ -195,10 +195,11 @@ def measurements(file_name: Path):
 def uploadfiles(file_name: Path):
     for (root, dirs, file) in os.walk(file_name.parent):
         for f in file:
-            if f.endswith('.csv'):
-                stations(Path(str(file_name.parent) + "\\"+f))
-                measurements(Path(str(file_name.parent) + "\\" + f))
-                print(f, 'is uploaded')
+            if 'PM10' in f or 'PM25' in f or 'SO2' in f or 'O3' in f:
+                if f.endswith('.csv'):
+                    stations(Path(str(file_name.parent) + "\\"+f))
+                    measurements(Path(str(file_name.parent) + "\\" + f))
+                    print(f, 'is uploaded')
 
 
 def unzip(filename: Path):
@@ -208,7 +209,7 @@ def unzip(filename: Path):
 
 if __name__ == '__main__':
     input = input()
-    executeSQLFile(Path("C:\School repository\RUG\Bachelor Project\Queries\CreateTable.sql"))
+    executeSQLFile(Path("C:\AirPollutionWebApp\Queries\CreateTable.sql"))
     file_location = Path(input)
     unzip(file_location)
     uploadfiles(file_location)

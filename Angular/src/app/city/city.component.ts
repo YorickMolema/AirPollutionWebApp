@@ -14,6 +14,8 @@ import {Average} from "../models/average";
 import {AQI} from "../models/aqi";
 import {AQIvalue} from "../models/aqivalue";
 import {MatCheckboxChange} from "@angular/material/checkbox";
+import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE} from "@angular/material/core";
+import {MAT_MOMENT_DATE_ADAPTER_OPTIONS, MomentDateAdapter} from "@angular/material-moment-adapter";
 
 export interface Tile {
   color: string;
@@ -22,10 +24,27 @@ export interface Tile {
   text: string;
 }
 
+export const MY_FORMATS = {
+  parse: {
+    dateInput: 'DD/MMM',
+  },
+  display: {
+    dateInput: 'DD/MMM',
+    monthYearLabel: 'MMM',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
+
 @Component({
   selector: 'app-city',
   templateUrl: './city.component.html',
   styleUrls: ['./city.component.css'],
+  providers: [{
+    provide: DateAdapter,
+    useClass: MomentDateAdapter,
+    deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
+  },{provide: MAT_DATE_FORMATS, useValue: MY_FORMATS}]
 })
 
 
@@ -310,9 +329,13 @@ export class CityComponent implements OnInit {
    */
   getData(): void {
     this.selectedSensors.forEach(entry => {
+      var numberOfNormalIsCleanData: number = 0
       entry.filteredMeasurements = entry.measurements.filter((x) => {
         //x[0] is the Date
         //We only want to return data before the simulationTime
+        if(x[1] == x[2]){
+          numberOfNormalIsCleanData = numberOfNormalIsCleanData + 1;
+        }
         if (x[0] != null) {
           const time = new Date(x[0])
           if (time <= this.simulationTime) {
@@ -325,6 +348,7 @@ export class CityComponent implements OnInit {
         }
       })
     });
+
   }
 
   /***
@@ -339,9 +363,9 @@ export class CityComponent implements OnInit {
         this.deselectAllSensors();
 
         //Parsing of date from date picker. There no handy library capable of doing this in an easy way
-        const startYear = this.range.controls['start'].value.getFullYear()
-        const startM = this.range.controls['start'].value.getMonth() + 1
-        const startD = this.range.controls['start'].value.getDate().toString()
+        const startYear = 2021
+        const startM = this.range.controls['start'].value.month() + 1
+        const startD = this.range.controls['start'].value.date().toString()
         var startMonth: string = ''
         var startDay: string = ''
         if (startM < 10) {
@@ -356,9 +380,9 @@ export class CityComponent implements OnInit {
         }
         this.startDate = startYear + '-' + startMonth + '-' + startDay
         this.simulationTime = new Date(this.startDate)
-        const endYear = this.range.controls['end'].value.getFullYear()
-        const endM = this.range.controls['end'].value.getMonth() + 1
-        const endD = this.range.controls['end'].value.getDate().toString()
+        const endYear = 2021
+        const endM = this.range.controls['end'].value.month() + 1
+        const endD = this.range.controls['end'].value.date().toString()
         var endMonth: string = ''
         var endDay: string = ''
         if (endM < 10) {

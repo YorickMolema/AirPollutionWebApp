@@ -11,7 +11,6 @@ app.config['MYSQL_DB'] = 'airpollution'
 AQILevels = {
     "PM2.5": [10, 20, 25, 50, 75, 800],
     "PM10": [20, 40, 50, 100, 150, 1200],
-    "NO2": [40, 90, 120, 230, 340, 1000],
     "O3": [50, 100, 130, 240, 380, 800],
     "SO2": [100, 200, 350, 500, 7500, 1250],
 }
@@ -124,7 +123,7 @@ def sensors():
 def measurements():
     """
     Endpoint: /measurements
-    :return: all measurements of a sensor in a given interval
+    :return: all normal and cleaned measurements of a sensor in a given interval
     """
     cur = mysql.connection.cursor()
     startTime = request.args.get('startTime')

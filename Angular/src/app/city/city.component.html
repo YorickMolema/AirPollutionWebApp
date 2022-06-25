@@ -32,7 +32,7 @@
             <input matStartDate formControlName="start" placeholder="Start date">
             <input matEndDate formControlName="end" placeholder="End date">
           </mat-date-range-input>
-          <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+          <mat-hint>Day/Month – Day/Month</mat-hint>
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-date-range-picker #picker
                                  (closed)="setMonthAndYear()"
@@ -58,7 +58,7 @@
       <li>
         <mat-checkbox [(ngModel)]="simulationIsRunning"
                       (change)="checkSimulationStart($event)"
-                      checked="false" >
+                      checked="false">
           Play simulation {{simulationIsRunning}}
         </mat-checkbox>
       </li>
@@ -94,15 +94,19 @@
       [style.background]="color">
       <div class="graphContainer">
         <ng-container *ngIf="this.selectedSensors.length > 0">
-          <google-chart #chart *ngFor="let entry of this.selectedSensors"
-                        [title]="'Level of ' + entry.name + ' over time'"
-                        [type]="typeLine"
-                        [data]="entry.allFilteredMeasurements"
-                        [columns]="['Data', entry.name, entry.name + 'Processed']"
-                        [options]="optionsLine"
-                        [width]="width"
-                        [height]="height">
-          </google-chart>
+          <ng-container *ngIf="selectedCity">
+            <ng-container *ngIf="selectedStation">
+              <google-chart #chart *ngFor="let entry of this.selectedSensors"
+                            [title]="'Level of ' + entry.name + ' over time in ' + this.selectedCity.Name + ' ' + this.selectedStation.Street"
+                            [type]="typeLine"
+                            [data]="entry.allFilteredMeasurements"
+                            [columns]="['Data', entry.name, entry.name + 'Cleaned']"
+                            [options]="optionsLine"
+                            [width]="width"
+                            [height]="height">
+              </google-chart>
+            </ng-container>
+          </ng-container>
         </ng-container>
       </div>
     </mat-grid-tile>
