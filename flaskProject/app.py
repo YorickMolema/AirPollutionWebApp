@@ -48,7 +48,7 @@ def cities():
     Endpoint: /cities
     :return: all cities from the database
     """
-    query = "SELECT * FROM City ORDER BY City.Name"
+    query = "SELECT * FROM city ORDER BY city.Name"
     cur.execute(query)
     new_data = []
     columns = ["CityID", "Name", "CountryID"]
@@ -67,7 +67,7 @@ def stations():
     Endpoint: /stations
     :return: all stations from the database
     """
-    query = "SELECT * FROM Station ORDER BY Station.Street"
+    query = "SELECT * FROM station ORDER BY station.Street"
     cur.execute(query)
     new_data = []
     columns = ["StationID", "StationCode", "CityID", "Street", "Latitude", "Longitude", "TypeOfLocation", "StationType"]
@@ -88,7 +88,7 @@ def sensors():
     """
     stationID = request.args.get('stationID')
     record = [stationID]
-    query = "SELECT * FROM Sensor WHERE stationID = %s"
+    query = "SELECT * FROM sensor WHERE stationID = %s"
     cur.execute(query, record)
     new_data = []
     columns = ["SensorID", "StationID", "Component", "Unit", "Duration", "TypeOfMeasurement", "MeasuringSystem", "isGenerated"]
