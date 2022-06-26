@@ -5,13 +5,14 @@ import {DBCity} from "./models/dbcity";
 import {DBStation} from "./models/dbstation";
 import {DBSensor} from "./models/dbsensor";
 import {DbMeasurement} from "./models/db-measurement";
+import {environment} from "../environments/environment";
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedService {
-readonly APIUrl = "http://127.0.0.1:5000"
+readonly APIUrl = environment.restAPIURL
   constructor(private http: HttpClient) { }
 
   /**

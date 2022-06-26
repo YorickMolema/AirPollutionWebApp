@@ -318,13 +318,14 @@ export class CityComponent implements OnInit {
       sensor.filteredMeasurements = sensor.allMeasurements.filter((x) => {
         //x[0] is the Date
         //We only want to return data before the simulationTime
-        if (!sensor.isGenerated) {
-          // add one if the measurement and it's processed value differ
-          sensor.numberOfCleanedMeasurements += x[1] !== x[2] ? 1 : 0;
-        }
+
         if (x[0] != null) {
           const time = new Date(x[0])
           if (time <= this.currentSimulationTime) {
+            if (!sensor.isGenerated) {
+              // add one if the measurement and it's processed value differ
+              sensor.numberOfCleanedMeasurements += x[1] !== x[2] ? 1 : 0;
+            }
             return true;
           } else {
             return false;
@@ -335,6 +336,8 @@ export class CityComponent implements OnInit {
 
       });
       sensor.totalNumberOfMeasurements = sensor.filteredMeasurements.length;
+      console.log(sensor.Component, sensor.totalNumberOfMeasurements, sensor.numberOfCleanedMeasurements)
+      console.log(sensor.numberOfCleanedMeasurements / sensor.totalNumberOfMeasurements)
     });
 
 
