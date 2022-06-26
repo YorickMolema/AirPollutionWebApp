@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  restAPIURL: "https://air-pollution-backend.herokuapp.com/"
+  restAPIURL: "http://84-82-237-206.fixed.kpn.net"
 };
 
