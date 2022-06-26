@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify
-from flask_mysqldb import MySQL
+from flaskext.mysql import MySQL
+
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'airpollution'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = ''
+app.config['MYSQL_DATABASE_DB'] = 'airpollution'
+mysql = MySQL()
+mysql.init_app(app)
+
+conn = mysql.connect()
+cur = conn.cursor()
+
 
 AQILevels = {
     "PM2.5": [10, 20, 25, 50, 75, 800],
@@ -17,26 +24,6 @@ AQILevels = {
 
 
 
-
-mysql = MySQL(app)
-
-
-def executeSQLQuery(query, record):
-    """
-    Executes the query with the data form the record
-    :param query:
-    :param record:
-    :return:
-    """
-    cursor = mysql.connection.cursor()
-
-    for i in range(0, len(record)):
-        try:
-            cursor.execute(query, record[i])
-        except IOError as msg:
-            print("Command skipped: ", msg)
-    mysql.connection.commit()
-    return
 
 def calculateAQI(pollutant, level):
     """
@@ -61,7 +48,6 @@ def cities():
     Endpoint: /cities
     :return: all cities from the database
     """
-    cur = mysql.connection.cursor()
     query = "SELECT * FROM City ORDER BY City.Name"
     cur.execute(query)
     new_data = []
@@ -81,7 +67,6 @@ def stations():
     Endpoint: /stations
     :return: all stations from the database
     """
-    cur = mysql.connection.cursor()
     query = "SELECT * FROM Station ORDER BY Station.Street"
     cur.execute(query)
     new_data = []
@@ -101,7 +86,6 @@ def sensors():
     Endpoint: /sensors
     :return: all sensors of the specified stationID
     """
-    cur = mysql.connection.cursor()
     stationID = request.args.get('stationID')
     record = [stationID]
     query = "SELECT * FROM Sensor WHERE stationID = %s"
@@ -125,7 +109,6 @@ def measurements():
     Endpoint: /measurements
     :return: all normal and cleaned measurements of a sensor in a given interval
     """
-    cur = mysql.connection.cursor()
     startTime = request.args.get('startTime')
     endTime = request.args.get('endTime')
     component = request.args.get('component')
