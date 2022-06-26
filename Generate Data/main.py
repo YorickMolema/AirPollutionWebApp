@@ -74,7 +74,7 @@ def calculateAverageAQI(values, componentsToGenerate, stationID):
                 if data == 0:
                     percentage = 0
                 else:
-                    percentage = AQILevels[component][AQIIndex] / data
+                    percentage = data / AQILevels[component][AQIIndex]
             elif AQIIndex == 4:
                 percentage = 0
             else:

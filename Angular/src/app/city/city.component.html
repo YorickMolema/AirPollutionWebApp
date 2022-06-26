@@ -1,92 +1,96 @@
 <div class="container">
-  <mat-grid-list cols="40" rowHeight="fit">
+  <mat-grid-list cols="40" rowHeight="fit" gutterSize="0">
     <mat-grid-tile
       [colspan]="40"
-      [rowspan]="5"
+      [rowspan]="2"
       [style.background]="color">
-      <mat-form-field appearance="fill">
-        <mat-label>Select city</mat-label>
-        <mat-select (selectionChange)="selectedOneCity()" [(ngModel)]="selectedCity">
-          <mat-option *ngFor="let city of citiesList" [value]="city">
-            {{city.Name}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" *ngIf="selectedCity">
-        <mat-label>Select station</mat-label>
-        <mat-select (selectionChange)="selectedOneStation()" [(ngModel)]="selectedStation">
-          <mat-option *ngFor="let station of stationList" [value]="station">
-            {{station.Street}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-
-      <ng-container *ngIf="selectedStation">
-        <div *ngIf="selectedStation && selectedCity">
-        </div>
+      <div class="selectionContainer">
         <mat-form-field appearance="fill">
-          <mat-label>Enter a date range</mat-label>
-          <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
-            <input matStartDate formControlName="start" placeholder="Start date">
-            <input matEndDate formControlName="end" placeholder="End date">
-          </mat-date-range-input>
-          <mat-hint>Day/Month – Day/Month</mat-hint>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-date-range-picker #picker
-                                 (closed)="setMonthAndYear()"
-                                 startView="month"
-                                 [startAt]="openingDate"
-          ></mat-date-range-picker>
-          <mat-error *ngIf="range.controls['start']?.hasError('matStartDateInvalid')">Invalid start date</mat-error>
-          <mat-error *ngIf="range.controls['end']?.hasError('matEndDateInvalid')">Invalid end date</mat-error>
+          <mat-label>Select city</mat-label>
+          <mat-select (selectionChange)="selectedOneCity()" [(ngModel)]="selectedCity">
+            <mat-option *ngFor="let city of citiesList" [value]="city">
+              {{city.Name}}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
 
-      </ng-container>
-      <section class="boxed" *ngIf="validDateSelected">
-        <div class="vertical flex">
-          <mat-radio-group [(ngModel)]="selectedAverage">
-            <div *ngFor="let average of this.averages">
-              <mat-radio-button class="example-radio-button" [value]="average" (change)="updateOnAverage()">
-                {{average}}
-              </mat-radio-button>
-            </div>
-          </mat-radio-group>
-        </div>
-
-      </section>
+        <mat-form-field appearance="fill" *ngIf="selectedCity">
+          <mat-label>Select station</mat-label>
+          <mat-select (selectionChange)="selectedOneStation()" [(ngModel)]="selectedStation">
+            <mat-option *ngFor="let station of stationList" [value]="station">
+              {{station.Street}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
 
-      <ng-container *ngIf="validDateSelected && selectedAverage" >
-        <section class="boxed">
+        <ng-container *ngIf="selectedStation">
+          <mat-form-field appearance="fill">
+            <mat-label>Enter a date range</mat-label>
+            <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
+              <input matStartDate formControlName="start" placeholder="Start date">
+              <input matEndDate formControlName="end" placeholder="End date">
+            </mat-date-range-input>
+            <!--<mat-hint>Day/Month – Day/Month</mat-hint>-->
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker
+                                   (closed)="setMonthAndYear()"
+                                   startView="month"
+                                   [startAt]="openingDate"
+            ></mat-date-range-picker>
+            <mat-error *ngIf="range.controls['start']?.hasError('matStartDateInvalid')">Invalid start date</mat-error>
+            <mat-error *ngIf="range.controls['end']?.hasError('matEndDateInvalid')">Invalid end date</mat-error>
+          </mat-form-field>
+
+        </ng-container>
+        <section class="boxed" *ngIf="validDateSelected">
           <div class="vertical flex">
-            <div *ngFor="let sensor of this.allAvailableSensors">
-              <mat-checkbox [(ngModel)]="sensor.Selected"
-                            (change)="updateAllSensorsSelected(sensor);">
-                {{sensor.Component}} <span *ngIf="sensor.isGenerated">(generated)</span>
-                <span
-                  *ngIf="!sensor.isGenerated && sensor.hasDataFromDB">Cleaned: {{(sensor.numberOfCleanedMeasurements / sensor.totalNumberOfMeasurements) * 100 | number:'1.0-0'}}
-                  %</span>
-              </mat-checkbox>
+            <mat-radio-group [(ngModel)]="selectedAverage">
+              <div *ngFor="let average of this.averages">
+                <mat-radio-button class="example-radio-button" [value]="average" (change)="updateOnAverage()">
+                  {{average}}
+                </mat-radio-button>
+              </div>
+            </mat-radio-group>
+          </div>
+
+        </section>
+
+
+        <ng-container *ngIf="validDateSelected && selectedAverage">
+          <section class="boxed">
+            <div class="sensorlist">
+              <div *ngFor="let sensor of this.allAvailableSensors">
+                <mat-checkbox [(ngModel)]="sensor.Selected"
+                              (change)="updateAllSensorsSelected(sensor);">
+                  {{sensor.Component}} <span *ngIf="sensor.isGenerated">(generated)</span>
+                  <span
+                    *ngIf="!sensor.isGenerated && sensor.hasDataFromDB">Cleaned: {{(sensor.numberOfCleanedMeasurements / sensor.totalNumberOfMeasurements) * 100 | number:'1.0-0'}}
+                    %</span>
+                </mat-checkbox>
+              </div>
             </div>
+          </section>
+        </ng-container>
+
+        <section class="boxed" *ngIf="selectedSensors.length > 0">
+          <div class="vertical flex">
+            <button mat-icon-button *ngIf="!simulationIsRunning" (click)="startSimulation()"
+                    [disabled]="simulationIsRunning">
+              <mat-icon>play_circle</mat-icon>
+            </button>
+            <button mat-icon-button *ngIf="simulationIsRunning" (click)="stopSimulation()">
+              <mat-icon>stop_circle</mat-icon>
+            </button>
           </div>
         </section>
-      </ng-container>
 
-      <section class="boxed" *ngIf="selectedSensors.length > 0">
-        <div class="vertical flex">
-          <button mat-icon-button *ngIf="!simulationIsRunning" (click)="startSimulation()"
-                  [disabled]="simulationIsRunning">
-            <mat-icon>play_circle</mat-icon>
-          </button>
-          <button mat-icon-button *ngIf="simulationIsRunning" (click)="stopSimulation()">
-            <mat-icon>stop_circle</mat-icon>
-          </button>
-          <P *ngIf="simulationIsRunning"> {{currentSimulationTime | date:'MM/dd HH:mm'}}</P>
-        </div>
-      </section>
-
+        <section class="boxed" *ngIf="simulationIsRunning">
+          <div class="vertical flex">
+            <P> {{currentSimulationTime | date:'MM/dd HH:mm'}}</P>
+          </div>
+        </section>
+      </div>
     </mat-grid-tile>
 
 

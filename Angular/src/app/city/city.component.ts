@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {SharedService} from "../shared.service";
 import {ActivatedRoute} from "@angular/router";
-import {ChartType,} from "angular-google-charts";
-import {map} from "rxjs";
+import {ChartType, Row,} from "angular-google-charts";
+import {from, map, Observable} from "rxjs";
 import {DBCity} from "../models/dbcity";
 import {DBStation} from "../models/dbstation";
 import {DBSensor, GUISensor} from "../models/dbsensor";
@@ -65,7 +65,7 @@ export class CityComponent implements OnInit {
   typeGauge: ChartType = ChartType.Gauge
   optionsGauge = {
     animation: {
-      duration: 2000
+      duration: 500
     },
     greenFrom: 0,
     greenTo: 30,
@@ -90,12 +90,7 @@ export class CityComponent implements OnInit {
   constructor(private service: SharedService, private route: ActivatedRoute) {
   }
 
-  color = 'lightblue'
-
-  tiles: Tile[] = [
-    {text: 'One', cols: 4, rows: 1, color: 'lightblue'},
-    {text: 'Four', cols: 2, rows: 1, color: '#DDBDF1'},
-  ];
+  color = 'whitesmoke'
 
   //List containing all cities
   citiesList: Array<DBCity> = new Array<DBCity>();
@@ -190,47 +185,55 @@ export class CityComponent implements OnInit {
    *
    * @param sensor the sensor for which the measurements have to be retrieved
    */
-  addMeasurementData(sensor: GUISensor): void {
-    //Retrieve all the measurements of the selected sensors
-    sensor.numberOfCleanedMeasurements = 0;
-    if (sensor.hasDataFromDB) { return ; }
+  addMeasurementData(sensor: GUISensor): Observable<GUISensor> {
+    return new Observable<GUISensor>(subscriber => {
+      //Retrieve all the measurements of the selected sensors
+      sensor.numberOfCleanedMeasurements = 0;
+      if (sensor.hasDataFromDB) {
+        subscriber.next(sensor);
+        return;
+      }
+      if (this.selectedCity !== undefined && this.validDateSelected && this.selectedAverage && this.selectedStation) {
+        //Get data from the backend
+        this.service.getMeasurementDataDailyAverage(
+          this.selectedStartDate + ' 00:00:00', this.selectedEndDate + ' 00:00:00', sensor.Component, this.selectedAverage, this.selectedStation).subscribe(
+          (data: DbMeasurement[]) => {
+            if (data.length > 0) {
+              data.forEach(measurement => {
+                /*
+                              const newRow = [measurement.Date, measurement.Value];
+                              componentMeasurement.measurements.push(newRow);
+                */
+                if (sensor.isGenerated) {
+                  const newRowAll = [measurement.Date, measurement.Value]
+                  sensor.allMeasurements.push(newRowAll)
+                } else {
+                  sensor.numberOfCleanedMeasurements += measurement.Value !== measurement.Processed_Value ? 1 : 0;
+                  const newRowAll = [measurement.Date, measurement.Value, measurement.Processed_Value];
+                  sensor.allMeasurements.push(newRowAll)
+                }
+              });
 
+              // FIrst time we set the "filtered" collection is set to the whole collection
+              // Later, if a filter is applied using the GUI, this set is built from the variable 'component.measurements.
+              sensor.filteredMeasurements = sensor.allMeasurements;
+            }
 
-
-    if (this.selectedCity !== undefined && this.validDateSelected && this.selectedAverage && this.selectedStation) {
-      //Get data from the backend
-      this.service.getMeasurementDataDailyAverage(
-        this.selectedStartDate + ' 00:00:00', this.selectedEndDate + ' 00:00:00', sensor.Component, this.selectedAverage, this.selectedStation).subscribe(
-        (data: DbMeasurement[]) => {
-          if (data.length > 0) {
-            data.forEach(measurement => {
-/*
-              const newRow = [measurement.Date, measurement.Value];
-              componentMeasurement.measurements.push(newRow);
-*/
-              if (sensor.isGenerated) {
-                const newRowAll = [measurement.Date, measurement.Value]
-                sensor.allMeasurements.push(newRowAll)
-              }
-              else{
-                sensor.numberOfCleanedMeasurements += measurement.Value !== measurement.Processed_Value ? 1 : 0;
-                const newRowAll = [measurement.Date, measurement.Value, measurement.Processed_Value];
-                sensor.allMeasurements.push(newRowAll)
-              }
-            });
-
-            // FIrst time we set the "filtered" collection is set to the whole collection
-            // Later, if a filter is applied using the GUI, this set is built from the variable 'component.measurements.
-            sensor.filteredMeasurements = sensor.allMeasurements;
+            sensor.totalNumberOfMeasurements = data.length;
+            sensor.hasDataFromDB = true;
+            subscriber.next(sensor);
+            return;
           }
+        )
+      }
 
-          sensor.totalNumberOfMeasurements = data.length;
-          sensor.hasDataFromDB = true;
-          this.calculateAQI();
-        }
-      )
-    }
+    });
 
+
+  }
+
+  updateGui(): void {
+    this.calculateAverageAQI();
 
   }
 
@@ -240,38 +243,22 @@ export class CityComponent implements OnInit {
    */
   updateAllSensorsSelected(sensor: GUISensor): void {
     if (sensor.Selected) {
-      this.addMeasurementData(sensor);
+      this.addMeasurementData(sensor).subscribe(() => {
+        this.updateGui()
+      });
     }
-
-    if (sensor.Selected) {
-    } else {
-      //Remove the AQI value of the sensor for the list
-/*
-      idx = this.AQIValues.findIndex((value) => value.Name === sensor.Component)
-      if (idx !== -1) {
-        this.AQIValues.splice(idx, 1);
-        this.AQIValues = [...this.AQIValues];
-        this.calculateAverageAQI()
-
-      }
-*/
-
-    }
-    this.allAvailableSensors.filter(sensor => sensor.Selected)
-      .forEach(sensor => {
-        // calc AQI
-      })
-    return;
+    this.updateGui()
   }
 
   waitOneSecond(): Promise<unknown> {
-    return new Promise(f => setTimeout(f, 1000));
+    return new Promise(f => setTimeout(f, 750));
   }
 
 
-  stopSimulation() : void {
+  stopSimulation(): void {
     this.simulationIsRunning = false;
   }
+
   /***
    * This function is called when the simulation has to start
    */
@@ -285,8 +272,8 @@ export class CityComponent implements OnInit {
         while (this.currentSimulationTime <= endOfSimulation && this.simulationIsRunning) {
           //Every second we want to go one day or one hour forward
           await this.waitOneSecond();
-
           this.filterSensorData();
+          this.updateGui();
 
           if (this.selectedAverage == "Daily") {
             this.currentSimulationTime = new Date(this.currentSimulationTime.setDate(this.currentSimulationTime.getDate() + 1))
@@ -295,7 +282,6 @@ export class CityComponent implements OnInit {
           }
         }
         this.simulationIsRunning = false;
-
       }
     }
   }
@@ -308,21 +294,19 @@ export class CityComponent implements OnInit {
     this.simulationIsRunning = false;
   }
 
-  /***
-   * Can the simulation button be selected in the UI
-   */
-  simulationCanBeCheck(): boolean {
-    return this.selectedSensors.length > 0;
-  }
-
 
   /***
    * This function is used to deselect all sensors. And remove their data
    */
   deselectAllSensors(): void {
     //Deselect all selected sensors and remove their data
-    this.allAvailableSensors.forEach((sensor) => { sensor.Selected = false; });
-    this.calculateAverageAQI();
+    this.allAvailableSensors.forEach((sensor) => {
+      sensor.Selected = false;
+      sensor.hasDataFromDB = false;
+      sensor.allMeasurements = new Array<Row>()
+      sensor.filteredMeasurements = new Array<Row>()
+    });
+    this.updateGui()
   }
 
   /***
@@ -334,7 +318,7 @@ export class CityComponent implements OnInit {
       sensor.filteredMeasurements = sensor.allMeasurements.filter((x) => {
         //x[0] is the Date
         //We only want to return data before the simulationTime
-        if (! sensor.isGenerated) {
+        if (!sensor.isGenerated) {
           // add one if the measurement and it's processed value differ
           sensor.numberOfCleanedMeasurements += x[1] !== x[2] ? 1 : 0;
         }
@@ -411,46 +395,55 @@ export class CityComponent implements OnInit {
    * Note we can only calculate the AQI for the following components:
    * PM2.5 PM10 O3 SO2
    */
-  calculateAQI(): void {
-    var numberOfPollutantsForAQICalculation = 0
-    this.selectedSensors.forEach((x) => {
-        var i = this.AQIValues.findIndex(value => value.Name === x.Component)
-        if (i === -1 || i === undefined) {
-          //There is calculated yet for this sensor
-          var total = 0;
-          numberOfPollutantsForAQICalculation += 1
-          x.allMeasurements.forEach((measurement) => {
-            const idx = this.AQITable.Pollutants.findIndex(value => value === x.Component);
-            const index = this.AQITable.Levels[idx].findIndex(function (value) {
-              if (measurement[1]) {
-                return (measurement[1] > value)
-              }
-              return
-            })
-            //Element is not found if value of measurement is bigger then the max threshold in the table
-            if (index !== -1) {
-              total += 25 * index
-            } else {
-              total += 100
-            }
-
-          })
-          total = total / x.allMeasurements.length
-          this.AQIValues.push(new AQIvalue(x.Component, total))
-
+  calculateAQI(sensor: GUISensor): number {
+    let total = 0;
+    let percentage = 0;
+    let aqi = 0;
+    sensor.filteredMeasurements.forEach((measurement) => {
+      let idx = this.AQITable.Pollutants.findIndex(value => value === sensor.Component);
+      let index = this.AQITable.Levels[idx].findIndex(value => {
+        if (measurement[1]) {
+          return value > measurement[1]
+        } else {
+          return false;
         }
+      });
+      if (measurement[1]) {
+        if (index === 0) {
+          if (measurement[1] === 0) {
+            percentage = 0;
+          } else {
+            // @ts-ignore
+            percentage = measurement[1] / this.AQITable.Levels[idx][index] ;
+          }
+        } else if (index === -1) {
+          percentage = 0
+          index = 4;
+        } else {
+          let intervalSize = this.AQITable.Levels[idx][index] - this.AQITable.Levels[idx][index - 1];
+          // @ts-ignore
+          let difference = measurement[1] - this.AQITable.Levels[idx][index];
+          percentage = difference / intervalSize;
+        }
+        aqi = index * 25 + percentage * 25;
       }
-    )
-    this.calculateAverageAQI()
-  }
+      total += aqi;
+    })
+    total /= sensor.filteredMeasurements.length;
+    return total;
+
+  }//calculateAQI()
 
   /***
    * Calculate the average AQI for drawing
    */
   calculateAverageAQI(): void {
-    this.AverageAQIValue = 0;
-    this.AQIValues.forEach((x) => this.AverageAQIValue += x.Value)
-    this.AverageAQIValue = this.AverageAQIValue / this.AQIValues.length
+    let total = 0;
+    this.allAvailableSensors.filter(sensor => sensor.Selected)
+      .forEach(value => {
+        total += this.calculateAQI(value)
+      });
+    this.AverageAQIValue = total / this.allAvailableSensors.filter(sensor => sensor.Selected).length;
   }
 
 

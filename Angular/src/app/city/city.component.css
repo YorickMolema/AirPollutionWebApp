@@ -9,7 +9,7 @@ div.container {
 }
 
 div.container mat-grid-list {
-  height: calc(100% - 5px);
+  height: calc(100%);
 }
 
 mat-form-field + mat-form-field ,
@@ -19,6 +19,7 @@ mat-form-field + mat-select {
 
 google-chart + google-chart {
   margin-top: 5px;
+  margin-left: 10px;;
 }
 
 .graphContainer google-chart {
@@ -32,6 +33,7 @@ google-chart + google-chart {
   width: calc(100%);
   overflow-y: auto;
 }
+
 
 .scroller {
   display: flex;
@@ -53,11 +55,19 @@ mat-radio-button + mat-radio-button{
 
 section.boxed {
   padding: 4px;
-  border:1px solid black;
-  background-color: white;
-  border-radius: 4px 4px 4px 4px;
-  box-shadow: 4px 4px lightgray;
+  background-color: rgb(0,0,0,0.04);
   font-size: 11pt;
+  border-bottom: 1px solid black;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+section.boxed:hover {
+  border-bottom-width: 2px;
 }
 
 .vertical.flex {
@@ -66,3 +76,27 @@ section.boxed {
   align-items: baseline;
 
 }
+
+.sensorlist {
+  display: flex;
+  height: 49px;
+  /* flex-flow: wrap; */
+  width: 400px;
+  flex-wrap: wrap;
+  /* align-content: center; */
+  /* justify-content: flex-start; */
+  /* align-items: flex-start; */
+  flex-direction: column;
+}
+
+.selectionContainer{
+  width: calc(100% - 5px);
+  height: calc(100% - 5px);
+  padding-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
