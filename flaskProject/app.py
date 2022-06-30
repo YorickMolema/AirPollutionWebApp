@@ -4,15 +4,20 @@ from flaskext.mysql import MySQL
 
 app = Flask(__name__)
 
+# app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+# app.config['MYSQL_DATABASE_USER'] = 'root'
+# app.config['MYSQL_DATABASE_PASSWORD'] = ''
+# app.config['MYSQL_DATABASE_DB'] = 'airpollution'
+
 app.config['MYSQL_DATABASE_HOST'] = 'srv12377.hostingserver.nl'
 app.config['MYSQL_DATABASE_USER'] = 'airpollution'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Bp85^sx46'
 app.config['MYSQL_DATABASE_DB'] = 'molema_org_-_general'
+
 mysql = MySQL()
 mysql.init_app(app)
 
-conn = mysql.connect()
-cur = conn.cursor()
+
 
 
 AQILevels = {
@@ -22,6 +27,10 @@ AQILevels = {
     "SO2": [100, 200, 350, 500, 7500, 1250],
 }
 
+def SQLConnection():
+    conn = mysql.connect()
+    cur = conn.cursor()
+    return cur
 
 
 
@@ -49,6 +58,7 @@ def cities():
     :return: all cities from the database
     """
     query = "SELECT * FROM city ORDER BY city.Name"
+    cur = SQLConnection()
     cur.execute(query)
     new_data = []
     columns = ["CityID", "Name", "CountryID"]
@@ -68,6 +78,7 @@ def stations():
     :return: all stations from the database
     """
     query = "SELECT * FROM station ORDER BY station.Street"
+    cur = SQLConnection()
     cur.execute(query)
     new_data = []
     columns = ["StationID", "StationCode", "CityID", "Street", "Latitude", "Longitude", "TypeOfLocation", "StationType"]
@@ -89,6 +100,7 @@ def sensors():
     stationID = request.args.get('stationID')
     record = [stationID]
     query = "SELECT * FROM sensor WHERE stationID = %s"
+    cur = SQLConnection()
     cur.execute(query, record)
     new_data = []
     columns = ["SensorID", "StationID", "Component", "Unit", "Duration", "TypeOfMeasurement", "MeasuringSystem", "isGenerated"]
@@ -137,6 +149,7 @@ def measurements():
                                     measurement.startTime BETWEEN %s AND %s AND
                                   sensor.Component = %s"""
     record = [stationID, startTime, endTime, component]
+    cur = SQLConnection()
     cur.execute(query, record)
     new_data = []
     columns = ["Name", "Date", "Value", "Processed_Value"]
